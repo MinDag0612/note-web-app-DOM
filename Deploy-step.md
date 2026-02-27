@@ -140,6 +140,7 @@ Chạy systemd để FastAPI chạy trong venv
 
 **systemctl start backend**
 
+dùng venv để cô lập môi trường Python của project, tránh xung đột thư viện và đảm bảo backend luôn chạy đúng version dependency mà không ảnh hưởng đến hệ thống.
 
 
 **systemctl status backend** -> test
@@ -157,6 +158,48 @@ Chạy systemd để FastAPI chạy trong venv
 
 
 Có thể vào máy ảo (**source venv/bin/activate**) - ở thư mục NoteWeb chạy thử **uvicorn backendSrc.main:app --reload --host 127.0.0.1 --port 8000 -** nếu có lỗi app sẽ khong lên
+
+Test web và config Domain trỏ tới IP 
+Config HTTPS
+
+0️⃣ Điều kiện bắt buộc (trước khi xin)
+
+✔ Có domain (vd: dangtm.pro)
+✔ Domain đã trỏ A record → IP server
+✔ Nginx đã cài
+✔ Port 80 & 443 mở (UFW + DigitalOcean Firewall)
+
+3️⃣ Cài Certbot + plugin Nginx
+sudo apt update
+sudo apt install certbot python3-certbot-nginx -y
+
+5️⃣ Xin HTTPS (LET’S ENCRYPT)
+sudo certbot --nginx -d dangtm.pro -d www.dangtm.pro
+
+Bot sẽ tự làm
+✔ Nhập email
+✔ Agree Terms
+✔ Certbot tự:
+
+xin cert
+
+sửa file nginx
+
+cấu hình SSL
+
+reload nginx
+
+6️⃣ Kiểm tra cert đã có chưa
+ls /etc/letsencrypt/live/dangtm.pro/
+
+
+Phải thấy:
+
+fullchain.pem
+privkey.pem
+
+kiểm tra lại file nginx đang chạy trong /etc/nginx/sites-enabled/ //name
+
 
 
 
