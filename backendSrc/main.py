@@ -49,11 +49,12 @@ cloudinary.config(
 
 
 def verify_google_token(credential: str):
+    gg_client_id = os.getenv("GG_CLIENT_ID")  # CLIENT_ID từ Google Cloud Console
     try:
         idinfo = id_token.verify_oauth2_token(
             credential,
             requests.Request(),
-            "322317196530-hlrp5pv8jt3igvcs78jjmgr01jtmpdo3.apps.googleusercontent.com" # CLIENT_ID từ Google Cloud Console
+            gg_client_id  # CLIENT_ID từ Google Cloud Console
         )
 
         # idinfo LÚC NÀY ĐÃ ĐƯỢC VERIFY

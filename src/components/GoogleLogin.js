@@ -55,7 +55,7 @@ function GoogleLogin() {
       if (window.google && window.google.accounts) {
         window.google.accounts.id.initialize({
           client_id:
-            "322317196530-hlrp5pv8jt3igvcs78jjmgr01jtmpdo3.apps.googleusercontent.com",
+            process.env.GG_CLIENT_ID,
           callback: handleCredentialResponse,
         });
 
