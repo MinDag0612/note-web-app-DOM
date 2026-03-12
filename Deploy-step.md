@@ -102,8 +102,6 @@ WorkingDirectory=/var/www/NoteWeb
 
 EnvironmentFile=/var/www/NoteWeb/.env
 
-
-
 ExecStart=/var/www/NoteWeb/backendSrc/venv/bin/gunicorn \\
 
           backendSrc.main:app \\
@@ -113,8 +111,6 @@ ExecStart=/var/www/NoteWeb/backendSrc/venv/bin/gunicorn \\
           --workers 2 \\
 
           --worker-class uvicorn.workers.UvicornWorker
-
-
 
 Restart=always
 
