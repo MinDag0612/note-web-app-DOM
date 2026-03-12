@@ -18,11 +18,20 @@ sudo apt install -y nodejs
 
 echo "=== ReactJS, Python packages installed ==="
 
-echo " === Cloning repository... ==="
+echo "=== Cloning repository... ==="
 sudo mkdir -p $PROJECT_DIR
-cd $PROJECT_DIR
-sudo git clone https://github.com/MinDag0612/note-web-app-DOM.git
+
+if [ ! -d "$PROJECT_DIR/$PROJECT_NAME" ]; then
+    cd $PROJECT_DIR
+    git clone https://github.com/MinDag0612/note-web-app-DOM.git
+else
+    echo "Repository already exists. Pulling latest changes..."
+    cd $PROJECT_DIR/$PROJECT_NAME
+    git pull
+fi
+
 cd $PROJECT_DIR/$PROJECT_NAME
+
 
 echo "=== Repository cloned ==="
 
@@ -35,7 +44,7 @@ if [ ! -f ".env" ]; then
 fi
 
 # Enter the project directory and set permissions for .env
-sudo cd $PROJECT_DIR/$PROJECT_NAME
+cd $PROJECT_DIR/$PROJECT_NAME
 sudo chmod 600 $PROJECT_DIR/$PROJECT_NAME/.env
 sudo npm install
 sudo npm run build
@@ -43,6 +52,7 @@ sudo npm run build
 echo "=== Frontend built ==="
 
 # Config Nginx
+echo "=== Configuring Nginx... ==="
 cd ~
 # apt install nginx
 cp /var/www/note-web-app-DOM/nginx.conf /etc/nginx/sites-available/noteweb
