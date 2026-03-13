@@ -1,23 +1,23 @@
 # CLOUD DEPLOY - DOCKER VERSION
 
-## Các bước sau khi đã ssh vào cloud server
+## Steps after SSHing into the cloud server
 ### Clone git repo:
 ```bash
 git clone https://github.com/MinDag0612/NoteWeb
 ```
 
-### chuyển sang nhánh docker
+### Switch to the docker branch
 ```bash
 git checkout feature-docker-containerization
 ```
 
-### (Trường hơp nếu chưa có ở local)
+### If not available locally
 ```bash
 git checkout -b feature-docker-containerization
 git pull origin feature-docker-containerization
 ```
 
-### Cài Docker & Docker Compose
+### Install Docker & Docker Compose
 ```bash
 sudo apt update
 sudo apt install -y docker.io docker-compose-plugin
@@ -26,72 +26,72 @@ sudo systemctl start docker
 ```
 
 ### Setup Env
-Ở bước này tự setup env dựa trên mẫu để backend có thể chạy
+In this step, manually set up the env based on the template so the backend can run
 ```bash
 cp .env.example .env
 nano .env
 chmod 600 .env
 ```
 
-### Chạy lệnh sau:
-Chạy backend và database
+### Run the following command:
+Run backend and database
 ```bash
 docker compose -f docker-compose.image.yml up -d backend mongodb
 ```
 
-### Restore mongo vào container
+### Restore mongo into the container
 ```bash
 docker exec -it mongodb mongorestore --drop /dump
 ```
 ### CONFIG NGINX
-## Bước 1
-config gần như tương tự bên Deploy-step.md
+## Step 1
+Configuration is almost similar to Deploy-step.md
 
-Cài nginx:
+Install nginx:
 ```bash
 sudo apt install nginx -y
 ```
 
-Kiểm tra có chạy hay không - Active: active (running)
+Check if it is running - Active: active (running)
 ```bash
 sudo systemctl status nginx
 ```
 
-Cho phép port 80 (nếu dùng UFW)
+Allow port 80 (if using UFW)
 ```bash
 sudo ufw allow 'Nginx Full'
 ```
-## Bước 2
-Copy file build trong project
+## Step 2
+Create directory for build files
 ```bash
 sudo mkdir -p /var/www/NoteWeb/build
 ```
-Dùng container tạm để rút file build ra máy thật
+Use a temporary container to extract build files to the host machine
 ```bash
 docker run --rm \
   -v /var/www/NoteWeb/build:/mnt/output \
   bkgamer1412/noteweb-frontend:latest \
   cp -r /app/build/. /mnt/output/
 ```
-Kiểm tra trên server:
+Check on the server:
 ```bash
 ls /var/www/NoteWeb/build
 ```
-Cấp quyền cho nginx
+Grant permissions to nginx
 ```bash
 sudo chown -R www-data:www-data /var/www/NoteWeb
 sudo chmod -R 755 /var/www/NoteWeb
 ```
-## Bước 3
-Xóa config mặc định:
+## Step 3
+Remove default config:
 ```bash
 sudo rm /etc/nginx/sites-enabled/default
 ```
-Tạo mới:
+Create a new one:
 ```bash
 sudo nano /etc/nginx/sites-available/noteweb
 ```
-Dán đúng config trong nginx.conf
+Paste the exact config into nginx.conf (change server_name to your cloud ip/domain name)
 ```bash
 server {
     listen 80;
@@ -122,24 +122,24 @@ server {
 }
 
 ```
-Kích hoạt config
+Enable config
 ```bash
 sudo ln -s /etc/nginx/sites-available/noteweb /etc/nginx/sites-enabled/
 ```
-Kiểm tra cú pháp và reload
+Check syntax and reload
 ```bash
 sudo nginx -t
 sudo systemctl reload nginx
 ```
 
-#### Mở IP/tên miền đã set trong conf để kiểm tra
+#### Open the IP/domain set in the conf to test
 ### Helper commands:
 
-Xóa container + network + volume của compose
+Remove compose containers + networks + volumes
 ```bash
 docker compose -f docker-compose.image.yml down  -v
 ```
-Test cấu hình nginx
+Test nginx configuration
 ```bash
 sudo nginx -t
 ```
@@ -147,29 +147,29 @@ Reload nginx
 ```bash
 sudo systemctl reload nginx
 ```
-Kiểm tra Docker
+Check Docker
 ```bash
 docker --version
 docker compose version
 ```
-Kiểm tra Docker service
+Check Docker service
 ```bash
 sudo systemctl status docker
 sudo systemctl is-enabled docker
 ```
-Kiểm tra reverse proxy host-level (ví dụ Nginx)
+Check host-level reverse proxy (e.g., Nginx)
 ```bash
 sudo systemctl status nginx
 ```
-Kiểm tra image đã pull từ registry
+Check pulled images from registry
 ```bash
 docker images
 ```
-Kiểm tra container chạy
+Check running containers
 ```bash
 docker ps
 ```
-Restart container
+Restart containers
 ```bash
 docker compose -f docker-compose.image.yml  restart
 ```
