@@ -3,16 +3,16 @@ from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy import false
 from datetime import datetime
 from sympy import content
-import backendSrc.schema.schema_req as schema_req
+import schema.schema_req as schema_req
 from fastapi.middleware.cors import CORSMiddleware
-from  backendSrc.data.conn import Conn
+from  data.conn import Conn
 import bcrypt
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from bson import ObjectId
-from backendSrc.schema.NoteSche import Note
-import backendSrc.jwt_auth as jwt
-from  backendSrc.schema.UserSche import User
+from schema.NoteSche import Note
+import jwt_auth as jwt
+from schema.UserSche import User
 from fastapi import UploadFile, File
 import cloudinary
 import cloudinary.uploader

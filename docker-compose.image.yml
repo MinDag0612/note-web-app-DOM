@@ -1,0 +1,43 @@
+services:
+  backend:
+    image: bkgamer1412/noteweb-backend:latest
+    volumes:
+      - uploads-data:/app/uploads
+    env_file:
+      - ./.env
+    container_name: fastapi
+    restart: unless-stopped
+    depends_on:
+      - mongodb
+    networks:
+      - app-network
+    ports:
+    - "127.0.0.1:8000:8000"
+
+  frontend:
+    image: bkgamer1412/noteweb-frontend:latest
+    container_name: nginx-react
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:80"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+  mongodb:
+    image: bitnami/mongodb:latest
+    container_name: mongodb
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+      - ./dump:/dump
+    networks:
+      - app-network
+
+networks:
+  app-network:
+
+volumes:
+  mongo-data:
+  uploads-data:
