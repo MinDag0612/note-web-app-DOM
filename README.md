@@ -15,7 +15,7 @@ Backend:
 - Python API service (FastAPI)
 
 Database:
-- MongoDB - Mongo atlat
+- MongoDB (MongoDB Atlas)
 
 ## Run Steps
 
@@ -31,6 +31,12 @@ npm install
 
 npm run dev
 
+4. Run backend
+
+pip install -r requirements.txt
+
+python main.py
+
 ## Deployment Notes
 
 The application can be deployed on a Linux server using the script in /scripts.
@@ -38,3 +44,6 @@ The application can be deployed on a Linux server using the script in /scripts.
 Run:
 
 bash scripts/deploy.sh
+
+Note: The .env file is not included in the repository. 
+Please copy .env.example and create your own .env file before running the deployment script.

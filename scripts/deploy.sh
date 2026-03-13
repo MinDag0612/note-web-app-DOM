@@ -39,7 +39,7 @@ echo "=== Installing frontend dependencies and building... ==="
 if [ ! -f ".env" ]; then
   echo ".env not found. Creating from template..."
   cp .env.example .env
-  echo "Please edit .env before running the script again."
+  echo "=== Please edit .env before running the script again. ==="
   exit 1
 fi
 
@@ -57,6 +57,7 @@ cd ~
 # apt install nginx
 cp /var/www/note-web-app-DOM/nginx.conf /etc/nginx/sites-available/noteweb
 sudo ln -s /etc/nginx/sites-available/noteweb /etc/nginx/sites-enabled/
+sudo rm /etc/nginx/sites-enabled/default
 sudo nginx -t
 sudo systemctl restart nginx
 

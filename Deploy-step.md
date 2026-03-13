@@ -1,5 +1,7 @@
 sau khi ssh và server
 
+cd /mnt/d/Extend/DOM/MID/demo
+
 
 
 clone git repo về
