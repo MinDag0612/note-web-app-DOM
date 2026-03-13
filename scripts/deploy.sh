@@ -1,107 +1,88 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+set -euo pipefail
 
-echo "=== DEPLOY START ==="
+PROJECT_NAME="note-web-app-DOM"
+PROJECT_BASE="/var/www"
+PROJECT_ROOT="$PROJECT_BASE/$PROJECT_NAME"
+REPO_URL="https://github.com/MinDag0612/note-web-app-DOM.git"
+NGINX_SITE_NAME="noteweb"
 
-# ---- CONFIG ----
-PROJECT_NAME=note-web-app-DOM
-PROJECT_DIR=/var/www
-BACKEND_DIR=$PROJECT_DIR/$PROJECT_NAME/backendSrc
-VENV_DIR=$BACKEND_DIR/venv
+log_info() {
+  echo "[INFO] $1"
+}
 
-echo "=== Installing packages... ==="
+log_warn() {
+  echo "[WARN] $1"
+}
 
-curl -fsSL https://deb.nodesource.com/setup\_20.x | sudo -E bash -
-sudo apt update
-sudo apt install -y python3-venv python3-pip nodejs nginx git
-sudo apt install -y nodejs
+log_error() {
+  echo "[ERROR] $1"
+}
 
-echo "=== ReactJS, Python packages installed ==="
+if [[ "${EUID}" -ne 0 ]]; then
+  log_error "Please run as root (or with sudo): sudo bash scripts/deploy.sh"
+  exit 1
+fi
 
-echo "=== Cloning repository... ==="
-sudo mkdir -p $PROJECT_DIR
+log_info "Deployment started"
 
-if [ ! -d "$PROJECT_DIR/$PROJECT_NAME" ]; then
-    cd $PROJECT_DIR
-    git clone https://github.com/MinDag0612/note-web-app-DOM.git
+mkdir -p "$PROJECT_BASE"
+
+if [[ ! -d "$PROJECT_ROOT/.git" ]]; then
+  log_info "Cloning repository into $PROJECT_ROOT"
+  git clone "$REPO_URL" "$PROJECT_ROOT"
 else
-    echo "Repository already exists. Pulling latest changes..."
-    cd $PROJECT_DIR/$PROJECT_NAME
-    git pull
+  log_info "Repository already exists, pulling latest changes"
+  cd "$PROJECT_ROOT"
+  git pull --ff-only
 fi
 
-cd $PROJECT_DIR/$PROJECT_NAME
+cd "$PROJECT_ROOT"
 
+log_info "Running system setup"
+bash "$PROJECT_ROOT/scripts/setup.sh"
 
-echo "=== Repository cloned ==="
-
-echo "=== Installing frontend dependencies and building... ==="
-if [ ! -f ".env" ]; then
-  echo ".env not found. Creating from template..."
-  cp .env.example .env
-  echo "=== Please edit .env before running the script again. ==="
+if [[ ! -f "$PROJECT_ROOT/.env" ]]; then
+  log_warn ".env not found. Creating from .env.example"
+  cp "$PROJECT_ROOT/.env.example" "$PROJECT_ROOT/.env"
+  chmod 600 "$PROJECT_ROOT/.env"
+  log_error "Please fill .env values, then run deploy.sh again."
   exit 1
 fi
 
-# Enter the project directory and set permissions for .env
-cd $PROJECT_DIR/$PROJECT_NAME
-sudo chmod 600 $PROJECT_DIR/$PROJECT_NAME/.env
-sudo npm install
-sudo npm run build
+chmod 600 "$PROJECT_ROOT/.env"
 
-echo "=== Frontend built ==="
+log_info "Building frontend"
+npm run build
 
-# Config Nginx
-echo "=== Configuring Nginx... ==="
-cd ~
-# apt install nginx
-cp /var/www/note-web-app-DOM/nginx.conf /etc/nginx/sites-available/noteweb
-sudo ln -s /etc/nginx/sites-available/noteweb /etc/nginx/sites-enabled/
-sudo rm /etc/nginx/sites-enabled/default
-sudo nginx -t
-sudo systemctl restart nginx
+log_info "Configuring Nginx"
+cp "$PROJECT_ROOT/nginx.conf" "/etc/nginx/sites-available/$NGINX_SITE_NAME"
+ln -sfn "/etc/nginx/sites-available/$NGINX_SITE_NAME" "/etc/nginx/sites-enabled/$NGINX_SITE_NAME"
 
-echo "=== Nginx configured - UI is accessible ==="
-
-# ---- BACKEND ----
-echo "=== Setup backend... ==="
-cd $BACKEND_DIR
-
-#Lệnh tạo venv
-if [ ! -d "venv" ]; then
-  echo "Creating virtual environment..."
-  python3 -m venv venv
+if [[ -f "/etc/nginx/sites-enabled/default" ]]; then
+  rm -f "/etc/nginx/sites-enabled/default"
 fi
 
-# cài đặt dependence
-$VENV_DIR/bin/pip install --upgrade pip
-$VENV_DIR/bin/pip install -r requirements.txt
-echo "=== Python virtual environment ready ==="
+nginx -t
+systemctl restart nginx
 
-# kiểm tra service file
-SERVICE_FILE="$PROJECT_DIR/$PROJECT_NAME/backend.service"
-
-if [ ! -f "$SERVICE_FILE" ]; then
-  echo "ERROR: backend.service not found!"
+if [[ ! -f "$PROJECT_ROOT/backend.service" ]]; then
+  log_error "backend.service not found at $PROJECT_ROOT/backend.service"
   exit 1
 fi
 
-echo "=== Python virtual environment created ==="
-echo "=== create systemd service file... ==="
-sudo cp $PROJECT_DIR/$PROJECT_NAME/backend.service /etc/systemd/system/
+log_info "Installing backend systemd service"
+cp "$PROJECT_ROOT/backend.service" /etc/systemd/system/backend.service
+systemctl daemon-reload
+systemctl enable backend
+systemctl restart backend
 
-sudo systemctl daemon-reexec
-sudo systemctl daemon-reload
-sudo systemctl enable backend
-sudo systemctl restart backend
-
-# kiểm tra service
 if systemctl is-active --quiet backend; then
-  echo "Backend service started successfully"
+  log_info "Backend service is active"
 else
-  echo "ERROR: Backend service failed"
-  sudo systemctl status backend
+  log_error "Backend service failed to start"
+  systemctl status backend --no-pager || true
   exit 1
 fi
 
-echo "=== DEPLOY DONE ==="
+log_info "Deployment completed successfully"
