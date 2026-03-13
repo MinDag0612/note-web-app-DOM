@@ -56,7 +56,7 @@ sudo ufw allow 'Nginx Full'
 Copy file build trong project
 ```bash
 sudo mkdir -p /var/www/NoteWeb/build
-sudo cp -r ~/NoteWeb/build/* /var/www/NoteWeb/build/
+sudo docker cp react:/app/build/. /var/www/NoteWeb/build/
 ```
 Kiểm tra trên server:
 ```bash
