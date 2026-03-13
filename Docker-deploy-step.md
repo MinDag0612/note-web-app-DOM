@@ -36,7 +36,7 @@ chmod 600 .env
 ### Chạy lệnh sau:
 Chạy backend và database
 ```bash
-docker compose -f docker-compose.image.yml up -d
+docker compose -f docker-compose.image.yml up -d backend mongodb
 ```
 
 ### Restore mongo vào container
