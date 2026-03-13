@@ -25,7 +25,16 @@ sudo systemctl enable docker
 sudo systemctl start docker
 ```
 
+### Setup Env
+Ở bước này tự setup env dựa trên mẫu để backend có thể chạy
+```bash
+cp .env.example .env
+nano .env
+chmod 600 .env
+```
+
 ### Chạy lệnh sau:
+Chạy backend và database
 ```bash
 docker compose -f docker-compose.image.yml up -d
 ```
@@ -56,7 +65,13 @@ sudo ufw allow 'Nginx Full'
 Copy file build trong project
 ```bash
 sudo mkdir -p /var/www/NoteWeb/build
-sudo docker cp react:/app/build/. /var/www/NoteWeb/build/
+```
+Dùng container tạm để rút file build ra máy thật
+```bash
+docker run --rm \
+  -v /var/www/NoteWeb/build:/mnt/output \
+  bkgamer1412/noteweb-frontend:latest \
+  cp -r /app/build/. /mnt/output/
 ```
 Kiểm tra trên server:
 ```bash
@@ -111,6 +126,13 @@ Kích hoạt config
 ```bash
 sudo ln -s /etc/nginx/sites-available/noteweb /etc/nginx/sites-enabled/
 ```
+Kiểm tra cú pháp và reload
+```bash
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+#### Mở IP/tên miền đã set trong conf để kiểm tra
 ### Helper commands:
 
 Xóa container + network + volume của compose
