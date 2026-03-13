@@ -37,6 +37,13 @@ pip install -r requirements.txt
 
 python main.py
 
+
+## Backend API
+
+The backend is implemented using FastAPI and provides APIs for:
+- User authentication
+- Note management
+
 ## Deployment Notes
 
 The application can be deployed on a Linux server using the script in /scripts.
