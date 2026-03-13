@@ -60,8 +60,8 @@ The script will:
 - pull latest source code
 - execute `scripts/setup.sh`
 - build frontend
-- configure Nginx
-- install and restart backend systemd service
+- configure Nginx from `deploy/nginx.conf`
+- install and restart backend systemd service from `deploy/backend.service`
 
 ## 6. Validate Deployment
 

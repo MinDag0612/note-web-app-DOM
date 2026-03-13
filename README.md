@@ -39,10 +39,9 @@ Browser (React SPA)
 |- src/                 # React frontend source
 |- public/              # Static frontend assets
 |- scripts/             # Linux automation scripts (Phase 1/2)
+|- deploy/              # Deployment assets (Nginx, systemd service, manual deploy notes)
 |- docs/                # Evidence screenshots and project docs
 |- .env.example         # Environment variable template
-|- backend.service      # systemd unit for backend service
-|- nginx.conf           # Nginx site config
 |- README.md
 ```
 
@@ -123,11 +122,11 @@ No real credentials are committed to this repository.
 Later phases will deploy this project on Ubuntu using Nginx + systemd.
 
 - Nginx serves the built React frontend and reverse-proxies `/api` to FastAPI.
-- FastAPI runs as a systemd service (`backend.service`) using Gunicorn/Uvicorn worker.
+- FastAPI runs as a systemd service (`deploy/backend.service`) using Gunicorn/Uvicorn worker.
 - Environment values are loaded from `.env` on the server.
 - Deployment evidence and screenshots are stored in `/docs`.
 
-Detailed deployment walkthrough is in `Deploy-step.md`.
+Detailed deployment walkthrough is in `deploy/Deploy-step.md`.
 
 ## 9. Git Workflow and Collaboration Policy
 
@@ -137,6 +136,5 @@ The intended workflow for this repository:
 - `main` is updated only through Pull Requests.
 - Every PR must include a clear description and at least one reviewer approval.
 - Branch protection rules are enabled on `main` (no direct push, no force push).
-
 
 

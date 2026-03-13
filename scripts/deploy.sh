@@ -56,7 +56,7 @@ log_info "Building frontend"
 npm run build
 
 log_info "Configuring Nginx"
-cp "$PROJECT_ROOT/nginx.conf" "/etc/nginx/sites-available/$NGINX_SITE_NAME"
+cp "$PROJECT_ROOT/deploy/nginx.conf" "/etc/nginx/sites-available/$NGINX_SITE_NAME"
 ln -sfn "/etc/nginx/sites-available/$NGINX_SITE_NAME" "/etc/nginx/sites-enabled/$NGINX_SITE_NAME"
 
 if [[ -f "/etc/nginx/sites-enabled/default" ]]; then
@@ -66,13 +66,13 @@ fi
 nginx -t
 systemctl restart nginx
 
-if [[ ! -f "$PROJECT_ROOT/backend.service" ]]; then
-  log_error "backend.service not found at $PROJECT_ROOT/backend.service"
+if [[ ! -f "$PROJECT_ROOT/deploy/backend.service" ]]; then
+  log_error "backend.service not found at $PROJECT_ROOT/deploy/backend.service"
   exit 1
 fi
 
 log_info "Installing backend systemd service"
-cp "$PROJECT_ROOT/backend.service" /etc/systemd/system/backend.service
+cp "$PROJECT_ROOT/deploy/backend.service" /etc/systemd/system/backend.service
 systemctl daemon-reload
 systemctl enable backend
 systemctl restart backend
