@@ -3,162 +3,339 @@ sau khi ssh và server
 cd /mnt/d/Extend/DOM/MID/demo
 
 
+# NoteWeb – Fullstack Notes Application
 
-clone git repo về
+A fullstack note-taking web application built with **ReactJS**, **FastAPI**, and **MySQL**, deployed using **Nginx** and **systemd**.
 
-* **mkdir /var/www**
-* **cd /var/www**
-* **git clone https://github.com/MinDag0612/NoteWeb**
-* 
+This project demonstrates a typical **production deployment pipeline** including backend service management, reverse proxy configuration, and environment isolation using Python virtual environments.
 
-Kiểm tra
+---
 
-* **ls ->** thấy project là ok
+# Project Architecture
+
+```
+Client (Browser)
+        │
+        ▼
+      Nginx
+ (Reverse Proxy)
+        │
+        ▼
+     FastAPI
+   (Gunicorn +
+   Uvicorn Worker)
+        │
+        ▼
+      MySQL
+```
+
+Frontend is served by **Nginx**, while API requests are forwarded to the **FastAPI backend** running on `127.0.0.1:8000`.
+
+---
+
+# Tech Stack
+
+### Frontend
+
+* ReactJS
+* Vite
+
+### Backend
+
+* FastAPI
+* Python
+* Gunicorn
+* Uvicorn Worker
+
+### Infrastructure
+
+* Nginx (Reverse Proxy)
+* systemd (Process Manager)
+* Linux Server
+
+### Database
+
+* MonggoDB
+
+---
+
+# Deployment
+
+The project includes an **automation script (`deploy.sh`)** that installs dependencies and prepares the environment automatically.
+
+### 1. Clone repository
+
+```bash
+mkdir /var/www
+cd /var/www
+git clone https://github.com/MinDag0612/NoteWeb
+ls
+```
+
+`ls` is used to verify the project was cloned successfully.
+
+---
+
+# 2. Run deployment script
+
+```bash
+chmod +x deploy.sh
+./deploy.sh
+```
+
+The script will automatically:
+
+* install required runtimes
+* install backend dependencies
+* create Python virtual environment
+* build the frontend
+* prepare project directories
+
+Successful deployment will output:
+
+```
+=== DEPLOY DONE ===
+```
 
 
 
-tải Node.js LTS
+NOTE 
+---
+```bash
+chmod 600 /var/www/NoteWeb/.env
+```
 
-* **curl -fsSL https://deb.nodesource.com/setup\_20.x | sudo -E bash -**
-* **sudo apt install -y nodejs**
+### Permission explanation
 
+| User   | Permission   |
+| ------ | ------------ |
+| Owner  | read + write |
+| Group  | none         |
+| Others | none         |
 
+Only the owner can access the `.env` file to prevent **API keys or database credentials from leaking**.
 
-Chạy file scrips
+---
 
-* **chmod +x deploy.sh**
-* **./deploy.sh**
-* Phải thấy === DEPLOY DONE ===
+# Nginx Configuration
 
+Nginx acts as a **reverse proxy** for the backend API.
 
+Copy the project configuration:
 
-Set môi trường
+```bash
+cp /var/www/NoteWeb/nginx.conf /etc/nginx/sites-available/noteweb
+```
 
-* **nano /var/www/NoteWeb/.env**
-* Dán .env vào -> save lại
-* **change mode cho .env: chmod 600 /var/www/NoteWeb/.env**
+Enable the site:
 
-chmod 600 nghĩa là
+```bash
+ln -s /etc/nginx/sites-available/noteweb /etc/nginx/sites-enabled/
+```
 
+Disable the default configuration:
 
+```bash
+rm /etc/nginx/sites-enabled/default
+```
 
-Owner   : read + write   (rw-)
+Test configuration:
 
-Group   : ---            (không xem được)
+```bash
+nginx -t
+```
 
-Others  : ---            (không xem được)
+Reload Nginx:
 
+```bash
+systemctl reload nginx
+```
 
+Verify configuration:
 
-Chỉ user sở hữu file mới đọc/ghi được .env
+```bash
+ls /etc/nginx/sites-available
+ls /etc/nginx/sites-enabled
+```
 
+---
 
+# Testing Frontend
 
-config NginX
+Open browser:
 
-*  	**apt install nginx** -> cài NginX
-*  	nano **/var/www/NoteWeb/nginx.conf** -> tự config
+```
+http://SERVER_IP
+```
 
- 	hoặc **cp /var/www/NoteWeb/nginx.conf /etc/nginx/sites-available/noteweb** -> copy file qua -> Kiểm tra nano -> lưu ý config lại theo IP của mình
+If the React UI loads successfully, the **frontend and Nginx are working correctly**.
 
+Port **80** is typically open by default.
 
+---
 
-*  	**ln -s /etc/nginx/sites-available/noteweb /etc/nginx/sites-enabled/** -> Kích hoạt site
-*  	**rm /etc/nginx/sites-enabled/default** -> Disable mặc định
-*  	**nginx -t** -> tets lại
-*  	**systemctl reload nginx** -> reload
-*  	Check lại 	**ls /etc/nginx/sites-available**
-* 
+# Backend Service (systemd)
 
- 			**ls /etc/nginx/sites-enabled**
+Backend runs as a **systemd service** to ensure automatic startup and crash recovery.
 
+Service file location:
 
+```
+/etc/systemd/system/backend.service
+```
 
-**-> Đến đây có thể truy cập vào ip xem UI lên chưa -> không cần mở port hay cấu hình firewall vì 80 mở mặc định**
+Example configuration:
 
-
-
-
-
-Tạo systemd service cho backend
-
-* **nano /etc/systemd/system/backend.service**
-
-
-
-\\\\\\\\\\
-
-\[Unit]
-
+```
+[Unit]
 Description=FastAPI Backend
-
 After=network.target
 
-
-
-\[Service]
-
+[Service]
 User=root
-
 WorkingDirectory=/var/www/NoteWeb
-
 EnvironmentFile=/var/www/NoteWeb/.env
 
-ExecStart=/var/www/NoteWeb/backendSrc/venv/bin/gunicorn \\
-
-          backendSrc.main:app \\
-
-          --bind 127.0.0.1:8000 \\
-
-          --workers 2 \\
-
-          --worker-class uvicorn.workers.UvicornWorker
+ExecStart=/var/www/NoteWeb/backendSrc/venv/bin/gunicorn \
+          backendSrc.main:app \
+          --bind 127.0.0.1:8000 \
+          --workers 2 \
+          --worker-class uvicorn.workers.UvicornWorker
 
 Restart=always
 
-
-
-\[Install]
-
+[Install]
 WantedBy=multi-user.target
+```
 
-\\\\\\\\\\\\
+### Key options
 
+**WorkingDirectory**
 
+Project root directory.
 
-Chạy systemd để FastAPI chạy trong venv
+**EnvironmentFile**
 
+Loads environment variables from `.env`.
 
+**Gunicorn + Uvicorn Worker**
 
-**systemctl daemon-reexec**
+Production server for running FastAPI.
 
-**systemctl daemon-reload**
+**Restart=always**
 
-**systemctl enable backend**
+Automatically restarts backend if it crashes.
 
-**systemctl start backend**
+---
 
-dùng venv để cô lập môi trường Python của project, tránh xung đột thư viện và đảm bảo backend luôn chạy đúng version dependency mà không ảnh hưởng đến hệ thống.
+# Start Backend Service
 
+Reload systemd configuration:
 
+```bash
+systemctl daemon-reexec
+systemctl daemon-reload
+```
 
-**systemctl status backend** -> test
+Enable auto-start:
 
+```bash
+systemctl enable backend
+```
 
+Start the backend:
 
+```bash
+systemctl start backend
+```
 
+---
 
-**curl http://127.0.0.1:8000/**-> check nội bộ, phải thấy {"status":"API is running"}
+# Backend Health Check
 
+Check service status:
 
+```bash
+systemctl status backend
+```
 
-**journalctl -u backend -n 50 --no-pager** -> xem lỗi nếu có
+Test API internally:
 
+```bash
+curl http://127.0.0.1:8000/
+```
 
+Expected response:
 
-Có thể vào máy ảo (**source venv/bin/activate**) - ở thư mục NoteWeb chạy thử **uvicorn backendSrc.main:app --reload --host 127.0.0.1 --port 8000 -** nếu có lỗi app sẽ khong lên
+```
+{"status":"API is running"}
+```
 
+---
+
+# Debugging
+
+### Check backend logs
+
+```bash
+journalctl -u backend -n 50 --no-pager
+```
+
+| Option       | Meaning                      |
+| ------------ | ---------------------------- |
+| `-u backend` | logs for backend service     |
+| `-n 50`      | last 50 lines                |
+| `--no-pager` | display directly in terminal |
+
+---
+
+### Manual backend test
+
+Activate virtual environment:
+
+```bash
+source venv/bin/activate
+```
+
+Run backend manually:
+
+```bash
+uvicorn backendSrc.main:app --reload --host 127.0.0.1 --port 8000
+```
+
+If the application has errors, they will appear directly in the terminal.
+
+Deactivate environment:
+
+```
 deactivate
+```
+
+---
+
+# Production Setup
+
+Optional steps after deployment:
+
+* configure **domain → server IP**
+* enable **HTTPS (Let's Encrypt)**
+
+---
+
+# Security Notes
+
+* `.env` permissions restricted with `chmod 600`
+* backend bound to **localhost (127.0.0.1)** only
+* external traffic handled through **Nginx reverse proxy**
+
+---
+
+# Author
+
+**MinDag**
+
+IT Student – Web Development / System Deployment Project
+
 
 
 
