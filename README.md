@@ -44,6 +44,10 @@ The backend is implemented using FastAPI and provides APIs for:
 - User authentication
 - Note management
 
+## Frontend by ReactJS
+- Add frontend structure
+- Note include build and node_module
+
 ## Deployment Notes
 
 The application can be deployed on a Linux server using the script in /scripts.
