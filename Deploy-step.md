@@ -397,6 +397,3 @@ Sẽ thấy các dòng **# managed by Certbot**
 
 
 **check lại domain với https**
-
-
-
