@@ -21,7 +21,7 @@ fi
 log_info "=== DEPLOY START ==="
 
 # ---- CONFIG ----
-PROJECT_NAME=note-web-app-DOM
+PROJECT_NAME=note-web-app-DOM/phase2
 PROJECT_DIR=/var/www
 PROJECT_ROOT=$PROJECT_DIR/$PROJECT_NAME
 BACKEND_DIR=$PROJECT_DIR/$PROJECT_NAME/backendSrc
