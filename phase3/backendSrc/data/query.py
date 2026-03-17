@@ -1,8 +1,8 @@
 from pymongo import MongoClient
 import bcrypt
 from datetime import datetime
-from backendSrc.schema.UserSche import UserQuery
-from backendSrc.schema.NoteSche import Note
+from schema.UserSche import UserQuery
+from schema.NoteSche import Note
 from datetime import datetime
 
 
