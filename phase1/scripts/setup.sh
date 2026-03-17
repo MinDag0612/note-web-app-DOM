@@ -1,5 +1,12 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Phase 1 automation script:
+# Prepare an Ubuntu environment with required runtimes, packages, and project folders.
+
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+BACKEND_DIR="$PROJECT_ROOT/backendSrc"
+VENV_DIR="$BACKEND_DIR/venv"
 
 log_info() {
   echo "[INFO] $1"
@@ -18,112 +25,46 @@ if [[ "${EUID}" -ne 0 ]]; then
   exit 1
 fi
 
-log_info "=== DEPLOY START ==="
+log_info "Starting Ubuntu environment setup for NoteWeb"
 
-# ---- CONFIG ----
-PROJECT_NAME=note-web-app-DOM/phase2
-PROJECT_DIR=/var/www
-PROJECT_ROOT=$PROJECT_DIR/$PROJECT_NAME
-BACKEND_DIR=$PROJECT_DIR/$PROJECT_NAME/backendSrc
-VENV_DIR=$BACKEND_DIR/venv
+# 1) Install system-level runtime dependencies.
+log_info "Installing OS packages and language runtimes"
+apt-get update -y
+apt-get install -y curl git nginx python3 python3-pip python3-venv ca-certificates
+curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+apt-get install -y nodejs
 
-log_info "=== Installing packages... ==="
+# 2) Show installed versions for quick verification.
+log_info "Installed versions"
+node -v
+npm -v
+python3 --version
+pip3 --version
 
-curl -fsSL https://deb.nodesource.com/setup\_20.x | sudo -E bash -
-apt update
-apt install -y python3-venv python3-pip nodejs nginx git
+# 3) Create required runtime directories.
+log_info "Creating runtime directories"
+mkdir -p "$PROJECT_ROOT/logs"
+mkdir -p "$PROJECT_ROOT/uploads"
+mkdir -p "$PROJECT_ROOT/data"
+mkdir -p "$BACKEND_DIR/logs"
 
-log_info "=== ReactJS, Python packages installed ==="
+# 4) Prepare backend virtual environment and Python dependencies.
+log_info "Preparing backend virtual environment"
+python3 -m venv "$VENV_DIR"
+"$VENV_DIR/bin/pip" install --upgrade pip
+"$VENV_DIR/bin/pip" install -r "$BACKEND_DIR/requirements.txt"
 
-log_info "=== Cloning repository... ==="
-mkdir -p $PROJECT_DIR
-
-if [ ! -d "$PROJECT_DIR/$PROJECT_NAME/.git" ]; then
-    cd $PROJECT_DIR
-    git clone https://github.com/MinDag0612/note-web-app-DOM.git
-else
-    log_info "Repository already exists. Pulling latest changes..."
-    cd $PROJECT_DIR/$PROJECT_NAME
-    git pull --ff-only
-fi
-
-cd $PROJECT_DIR/$PROJECT_NAME
-
-
-log_info "=== Repository cloned ==="
-
-log_info "=== Installing frontend dependencies and building... ==="
-if [ ! -f ".env" ]; then
-  log_warn ".env not found. Creating from template..."
-  cp .env.example .env
-  log_info "=== Please edit .env before running the script again. ==="
-  exit 1
-fi
-
-# Enter the project directory and set permissions for .env
-cd $PROJECT_ROOT
-chmod 600 $PROJECT_DIR/$PROJECT_NAME/.env
+# 5) Install frontend dependencies for local/app runtime.
+log_info "Installing frontend dependencies"
+cd "$PROJECT_ROOT"
 npm install
-npm run build
 
-log_info "=== Frontend built ==="
-
-# Config Nginx
-log_info "=== Configuring Nginx... ==="
-cd ~
-# apt install nginx
-cp $PROJECT_ROOT/deploy/nginx.conf /etc/nginx/sites-available/noteweb
-
-sudo ln -sf /etc/nginx/sites-available/noteweb /etc/nginx/sites-enabled/
-
-if [ -f /etc/nginx/sites-enabled/default ]; then
-  rm /etc/nginx/sites-enabled/default
+if [[ ! -f "$PROJECT_ROOT/.env" ]]; then
+  log_warn ".env file was not found. Create it from .env.example before running the application."
 fi
 
-sudo nginx -t
-sudo systemctl restart nginx
-
-log_info "=== Nginx configured - UI is accessible ==="
-
-# ---- BACKEND ----
-log_info "=== Setup backend... ==="
-cd $BACKEND_DIR
-
-#Lệnh tạo venv
-if [ ! -d "$VENV_DIR" ]; then
-  log_info "Creating virtual environment..."
-  python3 -m venv $VENV_DIR
-fi
-
-# cài đặt dependence
-$VENV_DIR/bin/pip install --upgrade pip
-$VENV_DIR/bin/pip install -r requirements.txt
-log_info "=== Python virtual environment ready ==="
-
-# kiểm tra service file
-SERVICE_FILE="$PROJECT_ROOT/deploy/backend.service"
-
-if [ ! -f "$SERVICE_FILE" ]; then
-  log_error "ERROR: backend.service not found!"
-  exit 1
-fi
-
-log_info "=== Python virtual environment created ==="
-log_info "=== create systemd service file... ==="
-sudo cp $PROJECT_ROOT/deploy/backend.service /etc/systemd/system/
-
-sudo systemctl daemon-reexec
-sudo systemctl daemon-reload
-sudo systemctl enable backend
-sudo systemctl restart backend
-
-# kiểm tra service
-if systemctl is-active --quiet backend; then
-  log_info "Backend service started successfully"
-else
-  log_error "ERROR: Backend service failed"
-  sudo systemctl status backend
-  exit 1
-fi
-
-log_info "=== DEPLOY DONE ==="
+log_info "Setup completed successfully"
+log_info "Next steps:"
+log_info "1) Configure .env"
+log_info "2) Start backend: $VENV_DIR/bin/uvicorn backendSrc.main:app --host 127.0.0.1 --port 8000"
+log_info "3) Start frontend: npm start"
