@@ -38,13 +38,14 @@ log_info "=== ReactJS, Python packages installed ==="
 log_info "=== Cloning repository... ==="
 mkdir -p $PROJECT_DIR
 
-if [ ! -d "$PROJECT_DIR/$PROJECT_NAME/.git" ]; then
+if [ ! -d "$PROJECT_ROOT/.git" ]; then
     cd $PROJECT_DIR
-    git clone https://github.com/MinDag0612/note-web-app-DOM.git
+    git clone -b deploy-phase2 --single-branch --depth 1 https://github.com/MinDag0612/note-web-app-DOM.git
 else
-    log_info "Repository already exists. Pulling latest changes..."
-    cd $PROJECT_DIR/$PROJECT_NAME
-    git pull --ff-only
+    log_info "Repository exists. Re-cloning..."
+    rm -rf $PROJECT_ROOT
+    cd $PROJECT_DIR
+    git clone -b deploy-phase2 --single-branch --depth 1 https://github.com/MinDag0612/note-web-app-DOM.git
 fi
 
 cd $PROJECT_DIR/$PROJECT_NAME
