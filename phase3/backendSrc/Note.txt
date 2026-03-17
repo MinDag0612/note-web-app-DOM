@@ -1,1 +1,0 @@
-mongodb+srv://TonMinhDang:06122005@webnote.tdp1lfx.mongodb.net/?appName=WebNote
