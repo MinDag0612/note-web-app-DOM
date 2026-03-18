@@ -1,5 +1,7 @@
 sau khi ssh và server
 
+sed -i 's/\r$//' setup.sh
+
 cd /mnt/d/Extend/DOM/MID/demo
 
 
