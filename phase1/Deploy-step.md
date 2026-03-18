@@ -60,6 +60,27 @@ Frontend is served by **Nginx**, while API requests are forwarded to the **FastA
 * MonggoDB
 
 ---
+REACT_APP_API_PROCESS_LOGIN=/api/login
+REACT_APP_API_PROCESS_LOGIN_GG=/api/login-google
+REACT_APP_API_NOTES=/api/get-notes
+REACT_APP_API_ADD_NOTE=/api/create-note
+REACT_APP_API_DELETE_NOTE=/api/delete-note
+REACT_APP_API_UPDATE_NOTE=/api/notes/update
+
+REACT_APP_API_IMAGE_UPLOAD=/api/upload-image
+
+CLOUDY_NAME=dtaymi3n9
+CLOUDY_API_KEY=349416381395239
+CLOUDY_SECRET=4pqekYaTxWPEHH4yeTw6osAJu8U
+
+GG_CLIENT_ID=322317196530-hlrp5pv8jt3igvcs78jjmgr01jtmpdo3.apps.googleusercontent.com
+
+MONGODB_URI=mongodb+srv://TonMinhDang:06122005@webnote.tdp1lfx.mongodb.net/?appName=WebNote
+
+JWT_SECRET_KEY=KEY_NOTE_WEB_123
+---
+
+---
 
 # Deployment
 
