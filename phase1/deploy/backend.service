@@ -4,10 +4,10 @@ After=network.target
 
 [Service]
 User=root
-WorkingDirectory=/var/www/note-web-app-DOM/
-EnvironmentFile=/var/www/note-web-app-DOM/.env
+WorkingDirectory=/var/www/note-web-app-DOM/phase2
+EnvironmentFile=/var/www/note-web-app-DOM/phase2/.env
 
-ExecStart=/var/www/note-web-app-DOM/backendSrc/venv/bin/gunicorn backendSrc.main:app --bind 127.0.0.1:8000 --workers 2 --worker-class uvicorn.workers.UvicornWorker
+ExecStart=/var/www/note-web-app-DOM/phase2/backendSrc/venv/bin/gunicorn backendSrc.main:app --bind 127.0.0.1:8000 --workers 2 --worker-class uvicorn.workers.UvicornWorker
 
 Restart=always
 

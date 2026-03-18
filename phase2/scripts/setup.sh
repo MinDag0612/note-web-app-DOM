@@ -23,6 +23,7 @@ log_info "=== DEPLOY START ==="
 # ---- CONFIG ----
 PROJECT_NAME=note-web-app-DOM/phase2
 PROJECT_DIR=/var/www
+PROJECT_HOME=$PROJECT_DIR/note-web-app-DOM
 PROJECT_ROOT=$PROJECT_DIR/$PROJECT_NAME
 BACKEND_DIR=$PROJECT_DIR/$PROJECT_NAME/backendSrc
 VENV_DIR=$BACKEND_DIR/venv
@@ -38,7 +39,7 @@ log_info "=== ReactJS, Python packages installed ==="
 log_info "=== Cloning repository... ==="
 mkdir -p $PROJECT_DIR
 
-if [ ! -d "$PROJECT_DIR/$PROJECT_NAME/.git" ]; then
+if [ ! -d "$PROJECT_HOME/.git" ]; then
     cd $PROJECT_DIR
     git clone https://github.com/MinDag0612/note-web-app-DOM.git
 else
