@@ -55,7 +55,7 @@ function GoogleLogin() {
       if (window.google && window.google.accounts) {
         window.google.accounts.id.initialize({
           client_id:
-            process.env.GG_CLIENT_ID,
+            process.env.REACT_APP_GOOGLE_CLIENT_ID,
           callback: handleCredentialResponse,
         });
 
